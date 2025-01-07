@@ -40,7 +40,7 @@
         .form-section {
             margin-bottom: 20px;
         }
-
+        
         label {
             display: block;
             font-weight: bold;
@@ -247,17 +247,25 @@ function updateCart() {
     cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
 }
 
-// Função para remover produto do carrinho
+// Função para remover produto do carrinho (um produto por vez)
 function removeFromCart(productId) {
     const productIndex = cart.findIndex(item => item.id === productId);
+    
     if (productIndex > -1) {
-        cart.splice(productIndex, 1); // Remove o item do carrinho
+        if (cart[productIndex].quantity > 1) {
+            // Se houver mais de 1 unidade, apenas diminui a quantidade
+            cart[productIndex].quantity -= 1;
+        } else {
+            // Caso contrário, remove o item do carrinho
+            cart.splice(productIndex, 1);
+        }
     }
 
     // Atualizar o carrinho e salvar no localStorage
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCart();
 }
+
 
 // Função para enviar o pagamento via Stripe
 const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM'); // Substitua pela sua chave pública real
