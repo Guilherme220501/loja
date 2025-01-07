@@ -257,7 +257,7 @@ function removeFromCart(productId) {
 }
 
 // Função para enviar o pagamento via Stripe
-const stripe = Stripe('pk_test_51...'); // Substitua pela sua chave pública real
+const stripe = Stripe('pk_live_51...'); // Substitua pela sua chave pública real
 const elements = stripe.elements();
 const card = elements.create('card');
 card.mount('#card-element');
