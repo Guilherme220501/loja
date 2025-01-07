@@ -215,83 +215,89 @@
 
     <script src="https://js.stripe.com/v3/"></script>
     <script>
-        // Array de produtos
-        const products = [
-            { id: 1, name: 'Cimento 50kg', description: 'Cimento de alta resistência para construção.', price: 30, estoque: 20, category: 'materiais' },
-            { id: 2, name: 'Tijolo Maciço', description: 'Tijolos para construção de paredes e fundações.', price: 2.5, estoque: 100, category: 'materiais' },
-            // ... outros produtos
-        ];
+    
+    let cart = []; 
 
-        let cart = [];
+// Função para carregar o carrinho do localStorage
+function loadCart() {
+    const storedCart = localStorage.getItem('cart');
+    if (storedCart) {
+        cart = JSON.parse(storedCart);
+        updateCart();
+    }
+}
 
-        function updateCart() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartTotal = document.getElementById('cart-total');
-            cartItemsContainer.innerHTML = '';
+// Função para atualizar o carrinho
+function updateCart() {
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    cartItemsContainer.innerHTML = ''; 
 
-            cart.forEach(item => {
-                const cartItemElement = document.createElement('li');
-                cartItemElement.innerHTML = `${item.name} - R$ ${item.price} x ${item.quantity}`;
-                cartItemsContainer.appendChild(cartItemElement);
-            });
+    cart.forEach(item => {
+        const cartItemElement = document.createElement('li');
+        cartItemElement.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity}
+            <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
+        cartItemsContainer.appendChild(cartItemElement);
+    });
 
-            const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-            cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
-        }
+    const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
+}
 
-        // Adicionar produtos ao carrinho
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const productInCart = cart.find(item => item.id === productId);
+// Função para remover produto do carrinho
+function removeFromCart(productId) {
+    const productIndex = cart.findIndex(item => item.id === productId);
+    if (productIndex > -1) {
+        cart.splice(productIndex, 1); // Remove o item do carrinho
+    }
 
-            if (productInCart) {
-                productInCart.quantity++;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
+    // Atualizar o carrinho e salvar no localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCart();
+}
 
-            updateCart();
-        }
+// Função para enviar o pagamento via Stripe
+const stripe = Stripe('pk_test_51...'); // Substitua pela sua chave pública real
+const elements = stripe.elements();
+const card = elements.create('card');
+card.mount('#card-element');
 
-        // Exemplo de adicionar um produto ao carrinho
-        addToCart(1); // Adiciona o Cimento 50kg ao carrinho
+const paymentForm = document.getElementById('payment-form');
+paymentForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const { token, error } = await stripe.createToken(card);
 
-        // Stripe setup
-        const stripe = Stripe('pk_test_51...'); // Substitua pela sua chave pública real
-        const elements = stripe.elements();
-        const card = elements.create('card');
-        card.mount('#card-element');
-
-        // Enviar token do cartão
-        const paymentForm = document.getElementById('payment-form');
-        paymentForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const { token, error } = await stripe.createToken(card);
-
-            if (error) {
-                alert('Erro no pagamento!');
-            } else {
-                const response = await fetch('/pagamento', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ token: token.id, amount: cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100 })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    alert('Pagamento realizado com sucesso!');
-                } else {
-                    alert('Erro: ' + result.error);
-                }
-            }
+    if (error) {
+        alert('Erro no pagamento!');
+    } else {
+        const response = await fetch('/pagamento', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                token: token.id, 
+                amount: cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100 
+            })
         });
 
-        // Exibição de informações de PIX
-        document.getElementById('pay-pix').addEventListener('click', () => {
-            document.getElementById('pix-info').style.display = 'block';
-        });
+        const result = await response.json();
+        if (result.success) {
+            alert('Pagamento realizado com sucesso!');
+        } else {
+            alert('Erro: ' + result.error);
+        }
+    }
+});
+
+// Exibição de informações de PIX
+document.getElementById('pay-pix').addEventListener('click', () => {
+    document.getElementById('pix-info').style.display = 'block';
+});
+
+// Carregar o carrinho ao carregar a página
+loadCart();
+
     </script>
 </body>
 </html>

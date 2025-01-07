@@ -514,21 +514,24 @@ color: orange;  /* Cor laranja para estoque médio */
     </div>
 
     <!-- Botão do Carrinho -->
-    <button class="view-cart-btn" onclick="toggleCart()">
-        <div class="img">
-            <img src="carrinho.jpeg" alt="Carrinho" width="40px" max-width="100%" height="auto">
-        </div>
-    </button>
-
-    <!-- Carrinho -->
-    <div class="cart" id="cart">
-        <h3>Carrinho <img src="carrinho.jpeg" alt="Carrinho" style="height: 40px;width: 30px;border-radius: 10px;"></h3>
-        <ul id="cart-items">
-            <li>Nenhum item no carrinho</li>
-        </ul>
-        <p>Total: R$ <span id="cart-total">0.00</span></p>
-        <button id="checkout-btn" onclick="checkout()" style="display: none;">Finalizar Compra</button>
+    <!-- Botão do Carrinho -->
+<button class="view-cart-btn" onclick="toggleCart()">
+    <div class="img">
+        <img src="carrinho.jpeg" alt="Carrinho" width="40px" max-width="100%" height="auto">
     </div>
+</button>
+
+<!-- Carrinho -->
+<div class="cart" id="cart">
+    <h3>Carrinho <img src="carrinho.jpeg" alt="Carrinho" style="height: 40px;width: 30px;border-radius: 10px;"></h3>
+    <ul id="cart-items">
+        <li>Nenhum item no carrinho</li>
+    </ul>
+    <p>Total: R$ <span id="cart-total">0.00</span></p>
+    <!-- Exibir botão de finalização de compra apenas se houver itens no carrinho -->
+    <button id="checkout-btn" onclick="window.location.href = 'formpamento.html';" style="display: none;">Finalizar Compra</button>
+</div>
+
 
     <!-- Rodapé -->
     <footer>
@@ -580,9 +583,7 @@ color: orange;  /* Cor laranja para estoque médio */
     { id: 18, name: 'Chave Phillips', description: 'chave de fenda Philips, é uma ferramenta manual projetada para apertar ou afrouxar parafusos com ranhuras cruzadas', price: 16, image: 'chave phillips.webp', estoque: 35, category: 'ferramentas' },
 ];
 
-// Categorias
 const categories = ['materiais', 'ferramentas', 'hidraulicas'];
-
 let cart = [];
 let selectedCategory = 'materiais'; // Categoria inicial
 
@@ -592,6 +593,7 @@ function selectCategory(category) {
     renderProductsByCategory(); // Re-renderiza os produtos da nova categoria
 }
 
+// Função para adicionar ao carrinho
 // Função para adicionar ao carrinho
 function addToCart(event, productId, productName, price) {
     event.preventDefault();
@@ -615,9 +617,34 @@ function addToCart(event, productId, productName, price) {
     updateCart();
     renderProductsByCategory(); // Atualiza os produtos da categoria selecionada
 
+    // Salva no localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+
     // O carrinho fica aberto após adicionar o item
     openCart();
 }
+
+// Função para remover do carrinho
+function removeFromCart(productId) {
+    const productInCart = cart.find(item => item.id === productId);
+    const product = products.find(item => item.id === productId);
+
+    if (productInCart) {
+        if (productInCart.quantity > 1) {
+            productInCart.quantity--;
+        } else {
+            cart = cart.filter(item => item.id !== productId);
+        }
+
+        product.estoque++;
+        updateCart();
+        renderProductsByCategory(); // Re-renderiza os produtos após alteração no carrinho
+    }
+
+    // Atualiza o localStorage
+    localStorage.setItem('cart', JSON.stringify(cart));
+}
+
 
 // Função para remover do carrinho
 function removeFromCart(productId) {
@@ -639,39 +666,33 @@ function removeFromCart(productId) {
 
 // Função para atualizar o carrinho
 function updateCart() {
-    const cartItemsContainer = document.getElementById('cart-items');
+    const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
-    cartItemsContainer.innerHTML = '';
+    const checkoutBtn = document.getElementById('checkout-btn');
 
-    if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<li>Nenhum item no carrinho</li>';
-        document.getElementById('checkout-btn').style.display = 'none';
-    } else {
-        cart.forEach(item => {
-            const cartItemElement = document.createElement('li');
-            cartItemElement.innerHTML = `
-                <span>${item.name} ${item.quantity > 1 ? `${item.quantity}x` : ''}</span>
-                <span class="price">R$ ${(item.price * item.quantity).toFixed(2)}</span>
-                <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>
-            `;
-            cartItemsContainer.appendChild(cartItemElement);
-        });
-        document.getElementById('checkout-btn').style.display = 'inline';
-    }
+    // Limpar a lista de itens no carrinho
+    cartItems.innerHTML = '';
 
-    const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    let total = 0;
+    cart.forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity} 
+        <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
+        cartItems.appendChild(listItem);
+        total += item.price * item.quantity;
+    });
+
+    // Atualizar o total
     cartTotal.textContent = total.toFixed(2);
+
+    // Exibir ou esconder o botão de finalização de compra
+    checkoutBtn.style.display = cart.length > 0 ? 'block' : 'none';
 }
 
 // Função para abrir o carrinho (fica visível o tempo todo)
 function openCart() {
     const cartContainer = document.getElementById('cart');
     cartContainer.classList.add('open'); // Sempre adiciona a classe "open"
-}
-
-// Função para fechar o carrinho (não será mais utilizada)
-function closeCart() {
-    // Não faz nada aqui, pois o carrinho ficará sempre aberto
 }
 
 // Função para pesquisa de produtos
@@ -706,7 +727,7 @@ function renderProducts(filteredProducts) {
             } else if (product.estoque <= 50) {
                 estoqueClass += ' medio';
             } else {
-                estoqueClass += ' altos';
+                estoqueClass += ' alto';
             }
 
             const productElement = document.createElement('div');
@@ -743,8 +764,6 @@ renderProductsByCategory();
 
 // Adiciona evento para finalizar compra (redirecionamento)
 document.getElementById('checkout-btn').addEventListener('click', redirectToPayment);
-
-
     </script>
 </body>
 </html>
