@@ -1,5 +1,5 @@
 const express = require('express');
-const stripe = require('stripe')('sk_test_51...'); // Substitua pela sua chave secreta real
+const stripe = require('stripe')('sk_live_...UT9D'); // Substitua pela sua chave secreta real
 const bodyParser = require('body-parser');
 const app = express();
 
