@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento com Stripe</title>
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        h2, h3 {
+            color: #2d3a3b;
+            text-align: center;
+        }
+        input{text-shadow: 9px;font-size: 19px;background-color: white;color: black;border: 4px solid blue;}
+        select{background-color: whitesmoke;color: black;border: 2px solid blue;}
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, button:focus {
+            border-color: #4CAF50;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .product-list {
+            margin-bottom: 30px;
+        }
+
+        .product-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .product-list li {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .price {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        #loading {
+            display: none;
+            font-weight: bold;
+            color: #f57c00;
+        }
+
+        #pix-info {
+            background-color: #f1f1f1;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #pay-pix {
+            background-color: #ff9800;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        #pay-pix:hover {
+            background-color: #fb8c00;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            button, #pay-pix {
+                font-size: 14px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Cadastro para Envio</h2>
+        <form id="user-form">
+            <div class="form-section">
+                <label for="name">Nome Completo:</label>
+                <input type="text" id="name" name="name" required placeholder="Digite seu nome completo">
+            </div>
+
+            <div class="form-section">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required placeholder="Digite seu e-mail">
+            </div>
+
+            <div class="form-section">
+                <label for="address">Endereço:</label>
+                <input type="text" id="address" name="address" required placeholder="Digite seu endereço">
+            </div>
+
+            <div class="form-section">
+                <label for="city">Cidade:</label>
+                <input type="text" id="city" name="city" required placeholder="Digite sua cidade">
+            </div>
+
+            <div class="form-section">
+                <label for="state">Estado:</label>
+                <select id="state" name="state" required>
+                    <option value="SP">São Paulo</option>
+                    <option value="RJ">Rio de Janeiro</option>
+                    <option value="MG">Minas Gerais</option>
+                    <option value="BA">Bahia</option>
+                    <option value="PR">Paraná</option>
+                    <option value="RS">Rio Grande do Sul</option>
+                </select>
+            </div>
+
+            <button type="submit">Cadastrar Dados para Envio</button>
+        </form>
+    </div>
+    <br>
+    <div class="container">
+        <h2>Resumo da Compra</h2>
+        <div class="product-list">
+            <h3>Itens no carrinho:</h3>
+            <ul id="cart-items">
+                <!-- Itens do carrinho serão carregados aqui -->
+            </ul>
+            <p id="cart-total">Total: R$ 0.00</p>
+        </div>
+    </div>
+    <br>
+    <div class="container">
+        <h2>Escolha sua forma de pagamento</h2>
+        <form id="payment-form">
+            <div id="card-element">
+                <!-- Stripe Card Element será inserido aqui -->
+            </div>
+            <button type="submit">Pagar com Cartão de Crédito</button>
+        </form>
+        <br>
+        <h3>Ou pague via PIX</h3>
+        <button id="pay-pix">Pagar com PIX</button>
+        <div id="pix-info">
+            <p>Faça o pagamento para o e-mail: <strong>guilherme8876sk@gmail.com</strong></p>
+            <p><em>Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
+        </div>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        // Array de produtos
+        const products = [
+            { id: 1, name: 'Cimento 50kg', description: 'Cimento de alta resistência para construção.', price: 30, estoque: 20, category: 'materiais' },
+            { id: 2, name: 'Tijolo Maciço', description: 'Tijolos para construção de paredes e fundações.', price: 2.5, estoque: 100, category: 'materiais' },
+            // ... outros produtos
+        ];
+
+        let cart = [];
+
+        function updateCart() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            cartItemsContainer.innerHTML = '';
+
+            cart.forEach(item => {
+                const cartItemElement = document.createElement('li');
+                cartItemElement.innerHTML = `${item.name} - R$ ${item.price} x ${item.quantity}`;
+                cartItemsContainer.appendChild(cartItemElement);
+            });
+
+            const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+            cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
+        }
+
+        // Adicionar produtos ao carrinho
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const productInCart = cart.find(item => item.id === productId);
+
+            if (productInCart) {
+                productInCart.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            updateCart();
+        }
+
+        // Exemplo de adicionar um produto ao carrinho
+        addToCart(1); // Adiciona o Cimento 50kg ao carrinho
+
+        // Stripe setup
+        const stripe = Stripe('pk_test_51...'); // Substitua pela sua chave pública real
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        // Enviar token do cartão
+        const paymentForm = document.getElementById('payment-form');
+        paymentForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const { token, error } = await stripe.createToken(card);
+
+            if (error) {
+                alert('Erro no pagamento!');
+            } else {
+                const response = await fetch('/pagamento', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: token.id, amount: cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100 })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Pagamento realizado com sucesso!');
+                } else {
+                    alert('Erro: ' + result.error);
+                }
+            }
+        });
+
+        // Exibição de informações de PIX
+        document.getElementById('pay-pix').addEventListener('click', () => {
+            document.getElementById('pix-info').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
