@@ -21,8 +21,9 @@
         }
 
         h2, h3 {
-            color: #2d3a3b;
+            color: black;
             text-align: center;
+            padding: 5px;
         }
         input{text-shadow: 9px;font-size: 19px;background-color: white;color: black;border: 4px solid blue;}
         select{background-color: whitesmoke;color: black;border: 2px solid blue;}
@@ -44,7 +45,8 @@
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
-            color: #555;
+            color: black;
+            font-size: 16px;
         }
 
         input, select, button {
@@ -181,7 +183,7 @@
                 </select>
             </div>
 
-            <button type="submit">Cadastrar Dados para Envio</button>
+            <button type="submit" style="background-color: blue;">Cadastrar Dados para Envio</button>
         </form>
     </div>
     <br>
@@ -198,10 +200,12 @@
     <br>
     <div class="container">
         <h2>Escolha sua forma de pagamento</h2>
+        <br>
         <form id="payment-form">
             <div id="card-element">
                 <!-- Stripe Card Element será inserido aqui -->
             </div>
+            <br>
             <button type="submit">Pagar com Cartão de Crédito</button>
         </form>
         <br>
@@ -212,7 +216,6 @@
             <p><em>Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
         </div>
     </div>
-
     <script src="https://js.stripe.com/v3/"></script>
     <script>
     
