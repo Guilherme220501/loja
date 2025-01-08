@@ -7,25 +7,32 @@ app.use(express.json());
 
 // Endpoint para processar pagamento
 app.post('/pagamento', async (req, res) => {
-    const { paymentMethodId, items } = req.body; // Recebendo paymentMethodId e items do frontend
+    const { paymentMethodId, items } = req.body;
+
+    // Log para verificar os dados recebidos
+    console.log('Dados recebidos no backend:', { paymentMethodId, items });
 
     try {
-        // Recalcular o valor no backend para evitar fraudes
-        const amount = items.reduce((total, item) => total + item.price * item.quantity, 0) * 100; // Valor em centavos
+        // Calcular o valor total
+        const amount = items.reduce((total, item) => total + item.price * item.quantity, 0) * 100;
 
+        // Criar Payment Intent
         const pagamento = await stripe.paymentIntents.create({
             amount,
             currency: 'brl',
             payment_method: paymentMethodId,
-            confirm: true, // Confirmar automaticamente
+            confirm: true, // Confirma automaticamente
         });
+
+        console.log('Pagamento criado com sucesso:', pagamento);
 
         res.status(200).send({
             success: true,
             paymentIntentId: pagamento.id,
         });
     } catch (error) {
-        console.error('Erro no pagamento:', error.message);
+        console.error('Erro ao processar pagamento:', error.message);
+
         res.status(500).send({
             error: error.message,
         });
