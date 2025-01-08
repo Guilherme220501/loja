@@ -257,150 +257,143 @@
         <div id="pix-qr-code"></div>
     </div>
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
-    
-    <script>
-        let cart = []; 
-    
-        // Função para carregar o carrinho do localStorage
-        function loadCart() {
-            const storedCart = localStorage.getItem('cart');
-            if (storedCart) {
-                cart = JSON.parse(storedCart);
-                updateCart();
-            }
-        }
-    
-        // Função para atualizar o carrinho
-        function updateCart() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartTotal = document.getElementById('cart-total');
-            cartItemsContainer.innerHTML = ''; 
-    
-            cart.forEach(item => {
-                const cartItemElement = document.createElement('li');
-                cartItemElement.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity}
-                    <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
-                cartItemsContainer.appendChild(cartItemElement);
-            });
-    
-            const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-            cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
-        }
-    
-        // Função para remover produto do carrinho
-        function removeFromCart(productId) {
-            const productIndex = cart.findIndex(item => item.id === productId);
-    
-            if (productIndex > -1) {
-                if (cart[productIndex].quantity > 1) {
-                    cart[productIndex].quantity -= 1;
-                } else {
-                    cart.splice(productIndex, 1);
-                }
-            }
-    
-            localStorage.setItem('cart', JSON.stringify(cart));
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+
+<script>
+    let cart = []; 
+
+    // Função para carregar o carrinho do localStorage
+    function loadCart() {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+            cart = JSON.parse(storedCart);
             updateCart();
         }
-    
-        // Stripe
-        const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
-        const elements = stripe.elements();
-        const card = elements.create('card');
-        card.mount('#card-element');
-    
-        const paymentForm = document.getElementById('payment-form');
-        paymentForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-    
-            // Calcular o valor total sem desconto
-            const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-            const amountInCents = totalAmount * 100; // Converte para centavos
-    
-            const { paymentMethod, error } = await stripe.createPaymentMethod({
-                type: 'card',
-                card: card,
+    }
+
+    // Função para atualizar o carrinho
+    function updateCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        cartItemsContainer.innerHTML = ''; 
+
+        cart.forEach(item => {
+            const cartItemElement = document.createElement('li');
+            cartItemElement.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity}
+                <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
+            cartItemsContainer.appendChild(cartItemElement);
+        });
+
+        const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
+    }
+
+    // Função para remover produto do carrinho
+    function removeFromCart(productId) {
+        const productIndex = cart.findIndex(item => item.id === productId);
+
+        if (productIndex > -1) {
+            if (cart[productIndex].quantity > 1) {
+                cart[productIndex].quantity -= 1;
+            } else {
+                cart.splice(productIndex, 1);
+            }
+        }
+
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCart();
+    }
+
+    // Stripe
+    const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    const paymentForm = document.getElementById('payment-form');
+    paymentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        // Calcular o valor total sem desconto
+        const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const amountInCents = totalAmount * 100; // Converte para centavos
+
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+        });
+
+        if (error) {
+            alert('Erro no pagamento: ' + error.message);
+        } else {
+            // Enviar o valor ao backend
+            const response = await fetch('/api/pagamento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    paymentMethodId: paymentMethod.id,
+                    amount: amountInCents, // Enviar o valor total
+                    items: cart, // Enviar os itens do carrinho
+                })
             });
-    
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Pagamento realizado com sucesso!');
+            } else {
+                alert('Erro: ' + result.error);
+            }
+        }
+    });
+
+    // Função para exibir as informações sobre o pagamento via PIX
+    document.getElementById("pay-pix").addEventListener("click", function() {
+        const pixInfo = document.getElementById("pix-info");
+        const overlay = document.getElementById("overlay");
+
+        if (pixInfo.style.display === "none") {
+            pixInfo.style.display = "block";
+            overlay.style.display = "flex"; // Exibe o overlay com flexbox para centralizar
+
+            // Gerar o QR Code do PIX
+            gerarQRCodePIX();
+        } else {
+            pixInfo.style.display = "none";
+            overlay.style.display = "none"; // Esconde o overlay
+        }
+    });
+
+    // Função para calcular o valor total do carrinho
+    function calcularTotalCarrinho() {
+        return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    }
+
+    // Função para gerar o QR Code do PIX
+    function gerarQRCodePIX() {
+        const valorPagamento = calcularTotalCarrinho().toFixed(2); // Formatar para 2 casas decimais
+        const chavePix = "guilherme8876sk@gmail.com"; // Sua chave PIX (pode ser e-mail, CPF, CNPJ ou aleatória)
+
+        // Montar a string de dados do PIX (isso pode variar dependendo do serviço que você está usando)
+        // Este é um exemplo simplificado de como você poderia gerar um QR Code do PIX
+        const dadosPix = `00020126360014BR.GOV.BCB.PIX0114${chavePix}5204000053039865406${valorPagamento}5802BR5913guilherme8876sk@gmail.com6008São Paulo62070503***6304${Math.random().toString(36).substring(7)}`;
+
+        // Gerar o QR Code e colocar na div com id "pix-qr-code"
+        QRCode.toString(dadosPix, { type: 'svg', width: 150 }, function(error, url) {
             if (error) {
-                alert('Erro no pagamento: ' + error.message);
+                console.error(error);
             } else {
-                // Enviar o valor ao backend
-                const response = await fetch('/api/pagamento', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        paymentMethodId: paymentMethod.id,
-                        amount: amountInCents, // Enviar o valor total
-                        items: cart, // Enviar os itens do carrinho
-                    })
-                });
-    
-                const result = await response.json();
-    
-                if (result.success) {
-                    alert('Pagamento realizado com sucesso!');
-                } else {
-                    alert('Erro: ' + result.error);
-                }
+                // Coloca o SVG gerado dentro da div com id "pix-qr-code"
+                document.getElementById("pix-qr-code").innerHTML = url;
             }
         });
-    
-        // Função para exibir as informações sobre o pagamento via PIX
-        document.getElementById("pay-pix").addEventListener("click", function() {
-            // Obtenha a área de informações do PIX
-            const pixInfo = document.getElementById("pix-info");
-            const overlay = document.getElementById("overlay");
-    
-            // Verifica se a área de informações está oculta
-            if (pixInfo.style.display === "none") {
-                // Torna a seção de informações visível
-                pixInfo.style.display = "block";
-                overlay.style.display = "flex"; // Exibe o overlay com flexbox para centralizar
-    
-                // Gerar o QR Code do PIX
-                gerarQRCodePIX();
-            } else {
-                // Caso o botão seja pressionado novamente, esconde a seção
-                pixInfo.style.display = "none";
-                overlay.style.display = "none"; // Esconde o overlay
-            }
-        });
-    
-        // Função para calcular o valor total do carrinho
-        function calcularTotalCarrinho() {
-            return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        }
-    
-        // Função para gerar o QR Code do PIX
-        function gerarQRCodePIX() {
-            // Pega o valor do carrinho
-            const valorPagamento = calcularTotalCarrinho().toFixed(2); // Formatar para 2 casas decimais
-    
-            // Dados do pagamento PIX (exemplo)
-            const chavePix = "guilherme8876sk@gmail.com"; // Aqui vai sua chave PIX (pode ser o e-mail, CPF, CNPJ ou uma chave aleatória)
-    
-            // Montar a string de dados do PIX (isso pode variar dependendo do serviço que você está usando)
-            // Para simplificação, aqui é só um exemplo básico de como você poderia gerar um QR Code do PIX.
-            const dadosPix = `00020126360014BR.GOV.BCB.PIX0114${chavePix}5204000053039865406${valorPagamento}5802BR5913guilherme8876sk@gmail.com6008São Paulo62070503***6304${Math.random().toString(36).substring(7)}`;
-    
-            // Gerar o QR Code e colocar na div com id "pix-qr-code"
-            QRCode.toString(dadosPix, { type: 'svg', width: 150 }, function(error, url) {
-                if (error) {
-                    console.error(error);
-                } else {
-                    // Coloca o SVG gerado dentro da div com id "pix-qr-code"
-                    document.getElementById("pix-qr-code").innerHTML = url;
-                }
-            });
-        }
-    
-        // Carregar o carrinho ao carregar a página
-        loadCart();
-    </script>
-    
+    }
+
+    // Carregar o carrinho ao carregar a página
+    loadCart();
+</script>
+
 </body>
 </html>
