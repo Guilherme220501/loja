@@ -4,7 +4,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);  // A chave secreta será 
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { paymentMethodId, amount } = req.body; // Receber o valor com desconto
+        const { paymentMethodId, amount } = req.body;
 
         try {
             // Criar o PaymentIntent com o valor correto (em centavos)
@@ -14,6 +14,9 @@ export default async function handler(req, res) {
                 payment_method: paymentMethodId,
                 confirmation_method: 'manual',
                 confirm: true,
+                automatic_payment_methods: {
+                    enabled: true, // Habilita os métodos automáticos de pagamento
+                },
             });
 
             res.status(200).json({
