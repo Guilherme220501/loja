@@ -216,7 +216,7 @@
             <p><em>Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
         </div>
     </div>
-     <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://js.stripe.com/v3/"></script>
 <script>
     let cart = []; 
 
@@ -262,6 +262,13 @@
         updateCart();
     }
 
+    // Função para calcular o desconto
+    function calculateDiscount(totalAmount) {
+        const discountPercentage = 0.10; // 10% de desconto
+        const discountAmount = totalAmount * discountPercentage;
+        return totalAmount - discountAmount; // Valor com desconto
+    }
+
     // Stripe
     const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
     const elements = stripe.elements();
@@ -272,6 +279,11 @@
     paymentForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
+        // Calcular o valor total com desconto
+        const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const finalAmount = calculateDiscount(totalAmount); // Valor com desconto
+        const amountInCents = finalAmount * 100; // Converte para centavos
+
         const { paymentMethod, error } = await stripe.createPaymentMethod({
             type: 'card',
             card: card,
@@ -280,18 +292,16 @@
         if (error) {
             alert('Erro no pagamento: ' + error.message);
         } else {
-            const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100; // Convertendo para centavos
-
-            // Enviar a requisição para o backend (função serverless do Vercel)
-            const response = await fetch('/api/pagamento', { // A URL foi alterada para /api/pagamento
+            // Enviar o valor com desconto ao backend
+            const response = await fetch('/api/pagamento', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
                     paymentMethodId: paymentMethod.id,
-                    amount: totalAmount, // Enviando o valor total em centavos
-                    items: cart, // Enviando o carrinho para validação no backend
+                    amount: amountInCents, // Enviar o valor com desconto
+                    items: cart, // Enviar os itens do carrinho
                 })
             });
 
@@ -306,6 +316,6 @@
 
     // Carregar o carrinho ao carregar a página
     loadCart();
-</script>
+</script>     
 </body>
 </html>
