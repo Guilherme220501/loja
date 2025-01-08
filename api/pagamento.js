@@ -1,10 +1,10 @@
 import Stripe from 'stripe';
 
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);  // A chave secreta será lida do .env
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { paymentMethodId, amount } = req.body;
+        const { paymentMethodId, amount } = req.body; // Receber o valor com desconto
 
         try {
             // Criar o PaymentIntent com o valor correto (em centavos)
