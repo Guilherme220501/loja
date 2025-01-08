@@ -1,27 +1,20 @@
 import Stripe from 'stripe';
 
-// Obtenha a chave secreta do Stripe da variável de ambiente
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY); // Usando a variável de ambiente
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { paymentMethodId, amount } = req.body; // Recebe o paymentMethodId e o valor total (em centavos)
-
-        console.log('Requisição recebida no servidor');
-        console.log('PaymentMethodId:', paymentMethodId);
-        console.log('Amount:', amount);
+        const { paymentMethodId, amount } = req.body; // Receber o valor com desconto
 
         try {
-            // Criar o PaymentIntent
+            // Criar o PaymentIntent com o valor correto (em centavos)
             const paymentIntent = await stripe.paymentIntents.create({
-                amount: amount, // Valor em centavos
-                currency: 'brl', // Moeda em Reais
-                payment_method: paymentMethodId, // paymentMethodId gerado no front-end
+                amount: amount, // Valor em centavos (com desconto aplicado)
+                currency: 'brl',
+                payment_method: paymentMethodId,
                 confirmation_method: 'manual',
-                confirm: true, // Confirma automaticamente a transação
+                confirm: true,
             });
-
-            console.log('PaymentIntent criado com sucesso:', paymentIntent.id);
 
             res.status(200).json({
                 success: true,
@@ -29,12 +22,9 @@ export default async function handler(req, res) {
             });
         } catch (error) {
             console.error('Erro no pagamento:', error);
-            res.status(500).json({
-                error: error.message,
-            });
+            res.status(500).json({ error: error.message });
         }
     } else {
-        // Caso o método HTTP não seja POST
         res.status(405).json({ error: 'Método não permitido' });
     }
 }
