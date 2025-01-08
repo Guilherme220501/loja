@@ -4,7 +4,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { paymentMethodId, amount } = req.body; // Receber o valor com desconto
+        const { paymentMethodId, amount } = req.body;
 
         try {
             // Criar o PaymentIntent com o valor correto (em centavos)
