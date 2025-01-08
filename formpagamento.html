@@ -323,6 +323,20 @@
             }
         }
     });
+// Função para exibir as informações sobre o pagamento via PIX
+document.getElementById("pay-pix").addEventListener("click", function() {
+    // Obtenha a área de informações do PIX
+    const pixInfo = document.getElementById("pix-info");
+
+    // Verifica se a área de informações está oculta
+    if (pixInfo.style.display === "none") {
+        // Torna a seção de informações visível
+        pixInfo.style.display = "block";
+    } else {
+        // Caso o botão seja pressionado novamente, esconde a seção
+        pixInfo.style.display = "none";
+    }
+});
 
 // Carregar o carrinho ao carregar a página
 loadCart();
