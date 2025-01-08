@@ -280,6 +280,9 @@
         if (error) {
             alert('Erro no pagamento: ' + error.message);
         } else {
+            // Calcular o valor total do carrinho em centavos
+            const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100; // Convertendo para centavos
+
             const response = await fetch('/pagamento', {
                 method: 'POST',
                 headers: {
@@ -287,6 +290,7 @@
                 },
                 body: JSON.stringify({ 
                     paymentMethodId: paymentMethod.id,
+                    amount: totalAmount, // Enviando o valor total para o backend
                     items: cart, // Enviando o carrinho para validação no backend
                 })
             });
