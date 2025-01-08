@@ -14,6 +14,7 @@ export default async function handler(req, res) {
                 payment_method: paymentMethodId, // O ID do método de pagamento
                 automatic_payment_methods: {
                     enabled: true, // Habilita métodos de pagamento automáticos
+                    allow_redirects: 'never', // Impede redirecionamento para a página externa
                 },
                 confirm: true,  // Confirma o pagamento imediatamente
             });
