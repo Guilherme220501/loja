@@ -370,15 +370,13 @@
         return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     }
 
-    // Função para gerar o QR Code do PIX
+    // Função para gerar o QR Code do PIX com o padrão correto
     function gerarQRCodePIX() {
         const valorPagamento = calcularTotalCarrinho().toFixed(2); // Formatar para 2 casas decimais
-
-        // Dados do pagamento PIX (exemplo)
         const chavePix = "guilherme8876sk@gmail.com"; // Sua chave PIX
 
-        // Montar a string de dados do PIX com o padrão correto
-        const dadosPix = `00020126360014BR.GOV.BCB.PIX0114${chavePix}5204000053039865406${valorPagamento}5802BR5913guilherme8876sk@gmail.com6008São Paulo62070503***6304${Math.random().toString(36).substring(7)}`;
+        // Montar a string de dados do PIX de acordo com o padrão do Banco Central
+        const dadosPix = `00020126360014BR.GOV.BCB.PIX0114${chavePix}5204000053039865406${valorPagamento}5802BR5913guilherme8876sk@gmail.com6008São Paulo62070503***6304${Math.floor(Math.random() * 1000000000000000000).toString().padStart(16, '0')}`;
 
         // Gerar o QR Code e colocar na div com id "pix-qr-code"
         QRCode.toString(dadosPix, { type: 'svg', width: 150 }, function(error, url) {
@@ -393,6 +391,5 @@
     // Carregar o carrinho ao carregar a página
     loadCart();
 </script>
-
 </body>
 </html>
