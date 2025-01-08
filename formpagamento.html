@@ -216,7 +216,7 @@
             <p><em>Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
         </div>
     </div>
-    <script src="https://js.stripe.com/v3/"></script>
+     <script src="https://js.stripe.com/v3/"></script>
 <script>
     let cart = []; 
 
@@ -280,17 +280,17 @@
         if (error) {
             alert('Erro no pagamento: ' + error.message);
         } else {
-            // Calcular o valor total do carrinho em centavos
             const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100; // Convertendo para centavos
 
-            const response = await fetch('/pagamento', {
+            // Enviar a requisição para o backend (função serverless do Vercel)
+            const response = await fetch('/api/pagamento', { // A URL foi alterada para /api/pagamento
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
                     paymentMethodId: paymentMethod.id,
-                    amount: totalAmount, // Enviando o valor total para o backend
+                    amount: totalAmount, // Enviando o valor total em centavos
                     items: cart, // Enviando o carrinho para validação no backend
                 })
             });
