@@ -10,13 +10,13 @@ app.use(bodyParser.json());
 
 // Endpoint para processar pagamento
 app.post('/pagamento', async (req, res) => {
-    const { token, amount } = req.body;
+    const { paymentMethodId, amount } = req.body; // Recebe o paymentMethodId e o valor total (em centavos)
 
     try {
         const paymentIntent = await stripe.paymentIntents.create({
             amount: amount, // Valor em centavos
             currency: 'brl', // Moeda em Reais
-            payment_method: token, // Token gerado no front-end
+            payment_method: paymentMethodId, // paymentMethodId gerado no front-end
             confirmation_method: 'manual',
             confirm: true, // Confirma automaticamente a transação
         });
