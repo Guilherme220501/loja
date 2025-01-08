@@ -216,7 +216,7 @@
             <p><em>Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
         </div>
     </div>
-     <script src="https://js.stripe.com/v3/"></script>
+<script src="https://js.stripe.com/v3/"></script>
 <script>
     let cart = []; 
 
@@ -272,8 +272,12 @@
     // Stripe
     const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
     const elements = stripe.elements();
-    const card = elements.create('card');
-    card.mount('#card-element');
+    
+    // Criação do campo de cartão
+    const card = elements.create('card', {
+        hidePostalCode: true, // Oculta o código postal, caso não seja necessário
+    });
+    card.mount('#card-element'); // Monta o campo no DOM
 
     const paymentForm = document.getElementById('payment-form');
     paymentForm.addEventListener('submit', async (event) => {
@@ -284,6 +288,7 @@
         const finalAmount = calculateDiscount(totalAmount); // Valor com desconto
         const amountInCents = finalAmount * 100; // Converte para centavos
 
+        // Criar o método de pagamento com o cartão
         const { paymentMethod, error } = await stripe.createPaymentMethod({
             type: 'card',
             card: card,
@@ -309,6 +314,10 @@
 
             if (result.success) {
                 alert('Pagamento realizado com sucesso!');
+                // Limpar o carrinho após o pagamento bem-sucedido
+                localStorage.removeItem('cart');
+                cart = [];
+                updateCart();
             } else {
                 alert('Erro: ' + result.error);
             }
