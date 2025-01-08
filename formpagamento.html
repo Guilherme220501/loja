@@ -20,13 +20,26 @@
             padding: 20px;
         }
 
-        h2, h3 {
+        h2 {
             color: black;
             text-align: center;
             padding: 5px;
         }
-        input{text-shadow: 9px;font-size: 19px;background-color: white;color: black;border: 4px solid blue;}
-        select{background-color: whitesmoke;color: black;border: 2px solid blue;}
+        h3{text-align: left;}
+
+        input {
+            text-shadow: 9px;
+            font-size: 19px;
+            background-color: white;
+            color: black;
+            border: 4px solid blue;
+        }
+
+        select {
+            background-color: whitesmoke;
+            color: black;
+            border: 2px solid blue;
+        }
 
         .container {
             max-width: 900px;
@@ -144,6 +157,14 @@
             }
         }
 
+
+        #pix-qr-code canvas {
+            display: block;
+            margin: 0 auto; /* Centraliza horizontalmente */
+            max-width: 90%;
+            max-height: 90%;
+        }
+    
     </style>
 </head>
 <body>
@@ -168,9 +189,17 @@
 
             <div class="form-section">
                 <label for="city">Cidade:</label>
-                <input type="text" id="city" name="city" required placeholder="Digite sua cidade">
+                <input type="text" id="city" name="city" required placeholder="Digite sua cidade" >
             </div>
 
+            <div class="form-section">
+                <label for="Cep">Cep:</label>
+                <input type="text" name="cep" id="cep" placeholder="Digite seu Cep" required>
+            </div>
+            <div class="form-section">
+                <label for="Numero residencial">Numero residencial:</label>
+                <input type="number" placeholder="Digite numero da sua residencia" name="residencia" id="residencia" required>
+            </div>
             <div class="form-section">
                 <label for="state">Estado:</label>
                 <select id="state" name="state" required>
@@ -209,14 +238,27 @@
             <button type="submit">Pagar com Cartão de Crédito</button>
         </form>
         <br>
-        <h3>Ou pague via PIX</h3>
+        <h3 style="text-align: center;">Ou pague via PIX</h3>
+        <br>
         <button id="pay-pix">Pagar com PIX</button>
-        <div id="pix-info">
-            <p>Faça o pagamento para o e-mail: <strong>guilherme8876sk@gmail.com</strong></p>
-            <p><em>Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
+        <div id="pix-info" style="display: none;">
+            <p>Faça o pagamento para o email: <e-mail><strong>guilherme8876sk@gmail.com</strong></e-mail></p>
+            <br>
+            <p style="font-style: oblique;"><em style="text-shadow: 9px;">Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
+            <br>
+            <br>
+            <h3>Ou Pague via QRcode.</h3>
+            <br>            <div id="pix-qr-code"></div>
         </div>
     </div>
+
+    <!-- Overlay para mostrar o QR Code -->
+    <div id="overlay">
+        <div id="pix-qr-code"></div>
+    </div>
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    
     <script>
         let cart = []; 
     
@@ -306,22 +348,59 @@
                 }
             }
         });
+    
         // Função para exibir as informações sobre o pagamento via PIX
-document.getElementById("pay-pix").addEventListener("click", function() {
-    // Obtenha a área de informações do PIX
-    const pixInfo = document.getElementById("pix-info");
-
-    // Verifica se a área de informações está oculta
-    if (pixInfo.style.display === "none") {
-        // Torna a seção de informações visível
-        pixInfo.style.display = "block";
-    } else {
-        // Caso o botão seja pressionado novamente, esconde a seção
-        pixInfo.style.display = "none";
-    }
-});
+        document.getElementById("pay-pix").addEventListener("click", function() {
+            // Obtenha a área de informações do PIX
+            const pixInfo = document.getElementById("pix-info");
+            const overlay = document.getElementById("overlay");
+    
+            // Verifica se a área de informações está oculta
+            if (pixInfo.style.display === "none") {
+                // Torna a seção de informações visível
+                pixInfo.style.display = "block";
+                overlay.style.display = "flex"; // Exibe o overlay com flexbox para centralizar
+    
+                // Gerar o QR Code do PIX
+                gerarQRCodePIX();
+            } else {
+                // Caso o botão seja pressionado novamente, esconde a seção
+                pixInfo.style.display = "none";
+                overlay.style.display = "none"; // Esconde o overlay
+            }
+        });
+    
+        // Função para calcular o valor total do carrinho
+        function calcularTotalCarrinho() {
+            return cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        }
+    
+        // Função para gerar o QR Code do PIX
+        function gerarQRCodePIX() {
+            // Pega o valor do carrinho
+            const valorPagamento = calcularTotalCarrinho().toFixed(2); // Formatar para 2 casas decimais
+    
+            // Dados do pagamento PIX (exemplo)
+            const chavePix = "guilherme8876sk@gmail.com"; // Aqui vai sua chave PIX (pode ser o e-mail, CPF, CNPJ ou uma chave aleatória)
+    
+            // Montar a string de dados do PIX (isso pode variar dependendo do serviço que você está usando)
+            // Para simplificação, aqui é só um exemplo básico de como você poderia gerar um QR Code do PIX.
+            const dadosPix = `00020126360014BR.GOV.BCB.PIX0114${chavePix}5204000053039865406${valorPagamento}5802BR5913guilherme8876sk@gmail.com6008São Paulo62070503***6304${Math.random().toString(36).substring(7)}`;
+    
+            // Gerar o QR Code e colocar na div com id "pix-qr-code"
+            QRCode.toString(dadosPix, { type: 'svg', width: 150 }, function(error, url) {
+                if (error) {
+                    console.error(error);
+                } else {
+                    // Coloca o SVG gerado dentro da div com id "pix-qr-code"
+                    document.getElementById("pix-qr-code").innerHTML = url;
+                }
+            });
+        }
+    
         // Carregar o carrinho ao carregar a página
         loadCart();
     </script>
+    
 </body>
 </html>
