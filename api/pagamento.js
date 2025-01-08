@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 
-// Inicialize a instância do Stripe com sua chave secreta
-const stripe = Stripe('sk_live_...UT9D'); // Substitua pela sua chave secreta do Stripe
+// Obtenha a chave secreta do Stripe da variável de ambiente
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY); // Usando a variável de ambiente
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
