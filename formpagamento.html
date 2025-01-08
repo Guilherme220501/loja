@@ -374,11 +374,23 @@
     function gerarQRCodePIX() {
         const valorPagamento = calcularTotalCarrinho().toFixed(2); // Formatar para 2 casas decimais
         const chavePix = "guilherme8876sk@gmail.com"; // Sua chave PIX
+        const valorEmCentavos = (valorPagamento * 100).toFixed(0); // Converter para centavos
 
-        // Montar a string de dados do PIX de acordo com o padrão do Banco Central
-        const payload = `00020126360014BR.GOV.BCB.PIX0114${chavePix}520400005303986540${(valorPagamento * 100).toFixed(0)}5802BR5913guilherme8876sk@gmail.com6008São Paulo62070503***6304${Math.floor(Math.random() * 1000000000000000000).toString().padStart(16, '0')}`;
+        // Estrutura do QR Code conforme o padrão do Banco Central
+        const payload = [
+            "000201", // Prefixo
+            "26", "36", "00", "14", "BR.GOV.BCB.PIX", // Identificação do PIX
+            "01", "14", chavePix, // Chave do recebedor (seu e-mail ou CPF)
+            "52", "40", "00", "53", "03", "98", // Código de moeda (BRL, por exemplo)
+            "54", "06", valorEmCentavos, // Valor do pagamento
+            "58", "02", "BR", // País (BR)
+            "59", "13", "guilherme8876sk@gmail.com", // Nome do recebedor
+            "60", "08", "São Paulo", // Cidade
+            "62", "05", "03", "***", // Informações extras
+            "63", "04", Math.floor(Math.random() * 1000000000000000000).toString().padStart(16, '0') // Aleatório
+        ].join("");
 
-        // Gerar o QR Code e colocar na div com id "pix-qr-code"
+        // Gerar o QR Code com base no payload
         QRCode.toString(payload, { type: 'svg', width: 150 }, function(error, url) {
             if (error) {
                 console.error(error);
@@ -391,6 +403,5 @@
     // Carregar o carrinho ao carregar a página
     loadCart();
 </script>
-
 </body>
 </html>
