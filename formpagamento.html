@@ -371,8 +371,7 @@
     }
 
     // Função para gerar o QR Code do PIX com o padrão correto
-    function gerarQRCodePIX() {
-    const valorPagamento = calcularTotalCarrinho().toFixed(2); // Calcular o valor total com duas casas decimais
+    function gerarQRCodePIX(valorPagamento) {
     const chavePix = "guilherme8876sk@gmail.com"; // Sua chave PIX
     const nomeRecebedor = "Guilherme Barbosa da Silva"; // Nome do recebedor
     const cidadeRecebedor = "São Paulo"; // Cidade do recebedor
@@ -402,6 +401,7 @@
         }
     });
 }
+
     // Carregar o carrinho ao carregar a página
     loadCart();
 </script>
