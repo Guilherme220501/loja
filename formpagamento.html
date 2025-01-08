@@ -218,63 +218,90 @@
     </div>
     <script src="https://js.stripe.com/v3/"></script>
 <script>
-        // Inicializa o Stripe com a chave pública
-        const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
-        const elements = stripe.elements();
-        const card = elements.create('card');
-        card.mount('#card-element');
+    let cart = []; 
 
-        let cart = [
-            { id: 1, name: 'Produto A', price: 100, quantity: 2 }, // Exemplo
-            { id: 2, name: 'Produto B', price: 200, quantity: 1 }, // Exemplo
-        ];
+    // Função para carregar o carrinho do localStorage
+    function loadCart() {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+            cart = JSON.parse(storedCart);
+            updateCart();
+        }
+    }
 
-        // Atualiza o carrinho na interface
-        function updateCart() {
-            const cartItemsContainer = document.getElementById('cart-items');
-            const cartTotal = document.getElementById('cart-total');
-            cartItemsContainer.innerHTML = '';
+    // Função para atualizar o carrinho
+    function updateCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        cartItemsContainer.innerHTML = ''; 
 
-            let total = 0;
-            cart.forEach(item => {
-                total += item.price * item.quantity;
-                const li = document.createElement('li');
-                li.textContent = `${item.name} - R$${item.price.toFixed(2)} x ${item.quantity}`;
-                cartItemsContainer.appendChild(li);
-            });
+        cart.forEach(item => {
+            const cartItemElement = document.createElement('li');
+            cartItemElement.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity}
+                <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
+            cartItemsContainer.appendChild(cartItemElement);
+        });
 
-            cartTotal.textContent = `Total: R$${total.toFixed(2)}`;
+        const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
+    }
+
+    // Função para remover produto do carrinho
+    function removeFromCart(productId) {
+        const productIndex = cart.findIndex(item => item.id === productId);
+
+        if (productIndex > -1) {
+            if (cart[productIndex].quantity > 1) {
+                cart[productIndex].quantity -= 1;
+            } else {
+                cart.splice(productIndex, 1);
+            }
         }
 
-        // Processa o pagamento ao enviar o formulário
-        document.getElementById('payment-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const totalAmount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCart();
+    }
 
-            // Cria o token do cartão
-            const { token, error } = await stripe.createToken(card);
-            if (error) {
-                document.getElementById('payment-status').textContent = 'Erro no pagamento: ' + error.message;
-                return;
-            }
+    // Stripe
+    const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
 
-            // Envia o token para o backend
-            const response = await fetch('http://localhost:3000/pagamento', {
+    const paymentForm = document.getElementById('payment-form');
+    paymentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+        });
+
+        if (error) {
+            alert('Erro no pagamento: ' + error.message);
+        } else {
+            const response = await fetch('/pagamento', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: token.id, amount: totalAmount }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    paymentMethodId: paymentMethod.id,
+                    items: cart, // Enviando o carrinho para validação no backend
+                })
             });
 
             const result = await response.json();
             if (result.success) {
-                document.getElementById('payment-status').textContent = 'Pagamento realizado com sucesso!';
+                alert('Pagamento realizado com sucesso!');
             } else {
-                document.getElementById('payment-status').textContent = 'Erro no pagamento: ' + result.error;
+                alert('Erro: ' + result.error);
             }
-        });
+        }
+    });
 
-        // Carrega os itens do carrinho na interface
-        updateCart();
-    </script>
+    // Carregar o carrinho ao carregar a página
+    loadCart();
+</script>
 </body>
 </html>
