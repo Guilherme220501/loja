@@ -217,98 +217,91 @@
         </div>
     </div>
     <script src="https://js.stripe.com/v3/"></script>
-    <script>
-    
+<script>
     let cart = []; 
 
-// Função para carregar o carrinho do localStorage
-function loadCart() {
-    const storedCart = localStorage.getItem('cart');
-    if (storedCart) {
-        cart = JSON.parse(storedCart);
-        updateCart();
-    }
-}
-
-// Função para atualizar o carrinho
-function updateCart() {
-    const cartItemsContainer = document.getElementById('cart-items');
-    const cartTotal = document.getElementById('cart-total');
-    cartItemsContainer.innerHTML = ''; 
-
-    cart.forEach(item => {
-        const cartItemElement = document.createElement('li');
-        cartItemElement.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity}
-            <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
-        cartItemsContainer.appendChild(cartItemElement);
-    });
-
-    const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
-}
-
-// Função para remover produto do carrinho (um produto por vez)
-function removeFromCart(productId) {
-    const productIndex = cart.findIndex(item => item.id === productId);
-    
-    if (productIndex > -1) {
-        if (cart[productIndex].quantity > 1) {
-            // Se houver mais de 1 unidade, apenas diminui a quantidade
-            cart[productIndex].quantity -= 1;
-        } else {
-            // Caso contrário, remove o item do carrinho
-            cart.splice(productIndex, 1);
+    // Função para carregar o carrinho do localStorage
+    function loadCart() {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+            cart = JSON.parse(storedCart);
+            updateCart();
         }
     }
 
-    // Atualizar o carrinho e salvar no localStorage
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCart();
-}
+    // Função para atualizar o carrinho
+    function updateCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        cartItemsContainer.innerHTML = ''; 
 
-
-// Função para enviar o pagamento via Stripe
-const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM'); // Substitua pela sua chave pública real
-const elements = stripe.elements();
-const card = elements.create('card');
-card.mount('#card-element');
-
-const paymentForm = document.getElementById('payment-form');
-paymentForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const { token, error } = await stripe.createToken(card);
-
-    if (error) {
-        alert('Erro no pagamento!');
-    } else {
-        const response = await fetch('/pagamento', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-                token: token.id, 
-                amount: cart.reduce((acc, item) => acc + item.price * item.quantity, 0) * 100 
-            })
+        cart.forEach(item => {
+            const cartItemElement = document.createElement('li');
+            cartItemElement.innerHTML = `${item.name} - R$ ${item.price.toFixed(2)} x ${item.quantity}
+                <span class="remove-option" onclick="removeFromCart(${item.id})">Remover</span>`;
+            cartItemsContainer.appendChild(cartItemElement);
         });
 
-        const result = await response.json();
-        if (result.success) {
-            alert('Pagamento realizado com sucesso!');
-        } else {
-            alert('Erro: ' + result.error);
-        }
+        const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        cartTotal.textContent = `Total: R$ ${total.toFixed(2)}`;
     }
-});
 
-// Exibição de informações de PIX
-document.getElementById('pay-pix').addEventListener('click', () => {
-    document.getElementById('pix-info').style.display = 'block';
-});
+    // Função para remover produto do carrinho
+    function removeFromCart(productId) {
+        const productIndex = cart.findIndex(item => item.id === productId);
 
-// Carregar o carrinho ao carregar a página
-loadCart();
+        if (productIndex > -1) {
+            if (cart[productIndex].quantity > 1) {
+                cart[productIndex].quantity -= 1;
+            } else {
+                cart.splice(productIndex, 1);
+            }
+        }
 
-    </script>
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCart();
+    }
+
+    // Stripe
+    const stripe = Stripe('pk_live_51QeJJaEXQPnn4WV6kDkm9Fghh1ysoNdNNfz6ggDt78BLa3D6wSmHPrOvygIQWKpxTFzhGoXtjCURJSB9FA9eZSiv00dxR7roUM');
+    const elements = stripe.elements();
+    const card = elements.create('card');
+    card.mount('#card-element');
+
+    const paymentForm = document.getElementById('payment-form');
+    paymentForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: card,
+        });
+
+        if (error) {
+            alert('Erro no pagamento: ' + error.message);
+        } else {
+            const response = await fetch('/pagamento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    paymentMethodId: paymentMethod.id,
+                    items: cart, // Enviando o carrinho para validação no backend
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Pagamento realizado com sucesso!');
+            } else {
+                alert('Erro: ' + result.error);
+            }
+        }
+    });
+
+    // Carregar o carrinho ao carregar a página
+    loadCart();
+</script>
 </body>
 </html>
