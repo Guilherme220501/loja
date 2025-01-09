@@ -13,7 +13,8 @@ export default async function handler(req, res) {
                 currency: 'brl',
                 payment_method: paymentMethodId, // O ID do método de pagamento
                 automatic_payment_methods: {
-                    enabled: true, // Habilita métodos de pagamento automáticos
+                    enabled: true,  // Habilita métodos de pagamento automáticos
+                    allow_redirects: 'never',  // Impede o uso de métodos que exigem redirecionamento
                 },
                 confirm: true,  // Confirma o pagamento imediatamente
             });
