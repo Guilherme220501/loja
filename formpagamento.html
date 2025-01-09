@@ -166,6 +166,7 @@
             max-height: 90%;
         }
     
+        .contato{margin: 60px;width: 40px;display: flex;flex-direction: row;align-items: center;gap: 8px;padding: 10px;justify-content: center;text-align: center;cursor: grabbing;text-decoration: none;text-shadow: 9px;}
     </style>
 </head>
 <body>
@@ -243,21 +244,28 @@
         <br>
         <button id="pay-pix">Pagar com PIX</button>
         <div id="pix-info" style="display: none;">
-            <p>Faça o pagamento Total Selecionado para o: <e-mail><strong>guilherme8876sk@gmail.com</strong></e-mail></p>
+            <p style="word-wrap: break-word;">Faça o pagamento total selecionado no Carrinho para a <b style="color: black;text-shadow: 9px;">Chave PIX</b>:   <e-mail><strong>guilherme8876sk@gmail.com</strong></e-mail></p>
             <br>
-            <p style="font-style: oblique;"><em style="text-shadow: 9px;">Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
-            <br>
-            <br>
-            <h3>Ou Pague via QRcode.</h3>
+            <h3>Pague via QRcode.</h3>
             <br> 
             <div class="no-download">
             <img src="download (1).png" alt="QR Code" ondragstart="return false;" oncontextmenu="return false;" class="no-download" width="200px" height="200px" style="margin: auto;">
             </div>  
             <br>
             <br>
-            <h3>Br Code PIX (copia e cola)</h3>
+            <h3>Ou Br Code PIX (copia e cola)</h3>
             <br>
             <p style="word-wrap: break-word;">00020126470014BR.GOV.BCB.PIX0125GUILHERME8876SK@GMAIL.COM5204000053039865802BR5923Guilherme Barbosa Silva6009Sao Paulo610803936-00062070503***630465A2</p>
+            <br>
+            <br>
+            <p style="font-style: oblique;"><em style="text-shadow: 9px;">Após realizar o pagamento, envie o comprovante para confirmação.</em></p>
+            <div class="contato">
+            <p>
+            <img src="gmail.jpeg" alt="icon" style="width: 45px; height: 40px;border-radius: 10px 10px;margin: auto;"><a href="https://www.guilherme8876sk@gmail.com" target="_blank" rel="external"  style="text-decoration: none;">Gmail</a></p>
+            <br>
+            <p>
+            <img src="whatsapp.png" alt="icon" style="width: 40px; height: 40px;border-radius: 10px 10px;margin: auto;"><a href="https://wa.me/5511983417590" target="_blank" rel="external" style="text-decoration: none;">WhatsApp</a></p>
+            </div>
         </div>
     </div>
     <script src="https://js.stripe.com/v3/"></script>
