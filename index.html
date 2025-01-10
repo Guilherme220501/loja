@@ -530,6 +530,9 @@
     { id: 16, name: 'Grifo', description: 'Uma ferramenta manual ajustável feita para apertar ou soltar porcas, parafusos e outras conexões.', price: 15, image: 'Grifo.webp', estoque: 40, category: 'ferramentas' },
     { id: 17, name: 'Alicate Rebitador', description: 'O Alicate rebitador é uma ferramenta manual usada para aperto ou aparafusamento de peças', price: 30, image: 'rebitador.webp', estoque: 35, category: 'ferramentas' },
     { id: 18, name: 'Chave Phillips', description: 'chave de fenda Philips, é uma ferramenta manual projetada para apertar ou afrouxar parafusos com ranhuras cruzadas', price: 16, image: 'chave phillips.webp', estoque: 35, category: 'ferramentas' },
+    {id: 19, name: 'Abraçadeira', description:'Usada para Segurar Tubos', price: 4, image:'abracadeira.webp', estoque: 200, category:'hidraulicas',},
+    {id: 20, name:'Cotovelo 3/4', description:'Usada para transporte de agua', price: 7, image:'cotovelo 34.webp', estoque: 200, category:'hidraulicas',},
+    {id: 21, name:'Esguicho', description:'Usada para engate de mangueira', price: 15, image:'esguicho.webp', estoque: 100, category:'hidraulicas',},
 ];
 
 const categories = ['materiais', 'ferramentas', 'hidraulicas'];
@@ -541,7 +544,6 @@ function selectCategory(category) {
     selectedCategory = category;
     renderProductsByCategory(); // Re-renderiza os produtos da nova categoria
 }
-
 // Função para adicionar ao carrinho
 function addToCart(event, productId, productName, price) {
     event.preventDefault();

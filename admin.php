@@ -102,10 +102,15 @@ try {
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        form input, form select, form button {
+        form input, form button, textarea {
+            margin: auto;
+            width: 300px;
             padding: 10px;
             font-size: 16px;
+            border-radius: 10px 10px;
+            border: 1px solid black;
         }
+        select{width: 200px;padding: 8px;margin:auto;border-radius: 10px 10px;text-shadow: 9px;background-color: blue;color: white;}
         form button {
             background-color: #28a745;
             color: white;
@@ -136,6 +141,7 @@ try {
         .delete-btn:hover {
             background-color: #c82333;
         }
+        
     </style>
 </head>
 <body>
@@ -161,10 +167,10 @@ try {
             <!-- Produtos carregados dinamicamente -->
         </tbody>
     </table>
-
+    <br>
     <!-- Formulário de Adicionar/Editar Produtos -->
-    <h2>Adicionar/Editar Produto</h2>
-    <form id="product-form">
+    <h2 style="text-align:center">Adicionar/Editar Produto</h2>
+    <form id="product-form"> 
         <input type="hidden" name="id" id="product-id">
         <input type="text" name="nome" id="product-name" placeholder="Nome do Produto" required>
         <textarea name="descricao" id="product-description" placeholder="Descrição" required></textarea>
