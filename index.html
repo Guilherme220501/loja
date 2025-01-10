@@ -533,11 +533,13 @@
     {id: 19, name: 'Abraçadeira', description:'Usada para Segurar Tubos', price: 4, image:'abracadeira.webp', estoque: 200, category:'hidraulicas',},
     {id: 20, name:'Cotovelo 3/4', description:'Usada para transporte de agua', price: 7, image:'cotovelo 34.webp', estoque: 200, category:'hidraulicas',},
     {id: 21, name:'Esguicho', description:'Usada para engate de mangueira', price: 15, image:'esguicho.webp', estoque: 100, category:'hidraulicas',},
+    {id:22, name:'Joelho 90º',description:'A conexão Joelho 90° PVC da Marca Tigre com bitola de 4" 100mm é a peça que você procura para o seu projeto hidráulico de esgoto.',price:7.1,image:'joelho_90o.jpg',estoque:100,category:'hidraulicas',},
+    {id:23, name:'Tee 40mm Esgoto',description:'Usada para conexão de tubos',price: 12.1,image:'Tee 40mm.jpeg',estoque: 60,category:'hidraulicas',},
 ];
 
 const categories = ['materiais', 'ferramentas', 'hidraulicas'];
 let cart = [];
-let selectedCategory = 'materiais'; // Categoria inicial
+let selectedCategory = 'none'; // Categoria inicial
 
 // Função para trocar a categoria
 function selectCategory(category) {
