@@ -406,6 +406,27 @@
 
     // Carregar o carrinho ao carregar a página
     loadCart();
+
+document.getElementById('pay-qrcode').addEventListener('click', async () => {
+    const total = calcularTotalCarrinho();
+    const response = await fetch('/api/gerar-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            amount: total * 100, // Converter para centavos
+            key: 'guilherme8876sk@gmail.com', // Chave PIX
+        }),
+    });
+
+    const data = await response.json();
+    if (data.qrCode) {
+        const qrcodeDiv = document.getElementById('qrcode-info');
+        qrcodeDiv.innerHTML = `<img src="${data.qrCode}" alt="QR Code PIX" width="200px" height="200px">`;
+        qrcodeDiv.style.display = "block";
+    } else {
+        alert('Erro ao gerar QR Code PIX.');
+    }
+});
 </script>
 
 </body>
